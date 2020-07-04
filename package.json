@@ -1,0 +1,24 @@
+{
+  "name": "owi-validator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc --reporter=html --reporter=text mocha test  --exit || true",
+    "coveralls": "nyc --reporter=lcov --reporter=text-lcov npm test",
+    "generate-lcov": "nyc report --reporter=text-lcov >lcov.info",
+    "coveralls-coverage": "coveralls < lcov.info",
+    "codeclimate-coverage": "codeclimate-test-reporter < lcov.info",
+    "coverage": "nyc npm test && npm run generate-lcov && npm run coveralls-coverage && npm run codeclimate-coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "codeclimate-test-reporter": "^0.5.1",
+    "coveralls": "^3.1.0",
+    "mocha": "^8.0.1",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nyc": "^15.1.0"
+  }
+}
