@@ -23,8 +23,8 @@ class Validator {
 
   luhnCheck(val) {
     var sum = 0;
-    for (var i = 0; i < val.length; i++) {
-      var intVal = parseInt(val.substr(i, 1));
+    for (var i = 0; i < val.toString().length; i++) {
+      var intVal = Number(val.toString()[i]);
       if (i % 2 == 0) {
         intVal *= 2;
         if (intVal > 9) {
@@ -99,14 +99,15 @@ class Validator {
   }
 
   card(card) {
-    let errormsg = "";
     if (this.param === undefined) return this;
-    if (card === undefined) errormsg += "Please specify a card type";
+    if (card === undefined) {
+      this.errors = "Please specify a card type";
+      return this;
+    }
     if (this.luhnCheck(this.param) && this.patterns[card].test(this.param)) {
       return this;
     } else {
-      errormsg += `${this.paramtitle} is not a valid ${card}card`;
-      this.errors = errormsg;
+      this.errors = `${this.paramtitle} is not a valid ${card}card`;
       return this;
     }
   }
