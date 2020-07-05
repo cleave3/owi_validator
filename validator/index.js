@@ -102,9 +102,13 @@ class Validator {
     let errormsg = "";
     if (this.param === undefined) return this;
     if (card === undefined) errormsg += "Please specify a card type";
-    if (!this.patterns[card].test(this.param) && !this.luhnCheck(this.param)) errormsg += `${this.paramtitle} is not a valid ${card}card`;
-    this.errors = errormsg;
-    return this;
+    if (this.luhnCheck(this.param) && this.patterns[card].test(this.param)) {
+      return this;
+    } else {
+      errormsg += `${this.paramtitle} is not a valid ${card}card`;
+      this.errors = errormsg;
+      return this;
+    }
   }
 
   date() {
@@ -127,10 +131,13 @@ class Validator {
       this.errors = errormsg;
       return this;
     }
-    console.log(`"reg test" ${this.param}, ${this.errors}`, regex.test(this.param));
-    if (regex.test(this.param) === false) errormsg += `${this.paramtitle} does not match ${regex}`;
-    this.errors = errormsg;
-    return this;
+    if (regex.test(this.param)) {
+      return this;
+    } else {
+      errormsg += `${this.paramtitle} does not match ${regex}`;
+      this.errors = errormsg;
+      return this;
+    }
   }
 
   error(errormsg) {
@@ -149,7 +156,7 @@ class Validator {
   }
 
   exec() {
-    return this.errors !== null ? this.errors : true;
+    return this.errors !== null ? { isValid: false, errors: this.errors } : { isValid: true, errors: this.errors };
   }
 }
 
@@ -168,7 +175,7 @@ const owi = (param) => new Validator(param);
 const validate = (schema) => {
   let errors = [];
   for (entity in schema) {
-    if (schema[entity] !== true && schema[entity] !== null) errors.push(schema[entity]);
+    if (schema[entity].isValid === false) errors.push(schema[entity].errors);
   }
   return errors.length > 0 ? { isValid: false, errors } : { isValid: true, errors };
 };

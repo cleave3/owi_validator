@@ -218,24 +218,42 @@ const tests = [
     success: true,
     errormsg: "param is required",
   },
-  //   {
-  //     type: "Test for regex pattern",
-  //     errortest: {
-  //       regex: owi("A").regex(/[a-z]/).error("expects param to be lower case").exec(),
-  //       regex: owi("A").regex().error("Please provide a regex pattern").exec(),
-  //     },
-  //     successtest: {
-  //       regex: owi("ghghg").regex(/[a-z]/).error("expects param to be lower case").exec(),
-  //       regex: owi("ATYTY").regex(/[A-Z]/).error("expects param to be upper case").exec(),
-  //       regex: owi(565).regex(/[\d+]/).error("expects param to be a number").exec(),
-  //     },
-  //     errortype: "Failure test cases for regex pattern",
-  //     successtype: "Success test cases for regex pattern",
-  //     errorlength: 1,
-  //     error: false,
-  //     success: true,
-  //     errormsg: "Please provide a regex pattern",
-  //   },
+  {
+    type: "Test for card validity",
+    errortest: {
+      card: owi(0898989).card("master").error("expects param to be a valid card").exec(),
+      card2: owi(1).card("master").error("expects param to be a valid card").exec(),
+      card3: owi(0).card("master").error("expects param to be a valid card").exec(),
+    },
+    successtest: {
+      card: owi(5300728394662128).card("master").error("expects param to be a valid card").exec(),
+    },
+    errortype: "Failure test cases for card validity",
+    successtype: "Success test cases for card validity",
+    errorlength: 3,
+    error: false,
+    success: true,
+    errormsg: "expects param to be a valid card",
+  },
+
+  {
+    type: "Test for regex pattern",
+    errortest: {
+      regex: owi("A").regex(/[a-z]/).error("expects param to be lower case").exec(),
+      regex: owi("A").regex().error("Please provide a regex pattern").exec(),
+    },
+    successtest: {
+      regex: owi("ghghg").regex(/[a-z]/).error("expects param to be lower case").exec(),
+      regex: owi("ATYTY").regex(/[A-Z]/).error("expects param to be upper case").exec(),
+      regex: owi(565).regex(/[\d+]/).error("expects param to be a number").exec(),
+    },
+    errortype: "Failure test cases for regex pattern",
+    successtype: "Success test cases for regex pattern",
+    errorlength: 1,
+    error: false,
+    success: true,
+    errormsg: "Please provide a regex pattern",
+  },
 ];
 
 describe("owi-validator", () => {
@@ -243,24 +261,24 @@ describe("owi-validator", () => {
     describe(test.type, () => {
       describe(test.errortype, () => {
         it("validity test", () => {
-          assert.equal(validate(test.errortest).isValid, test.error);
+          assert.deepEqual(validate(test.errortest).isValid, test.error);
         });
         it("Error Length test", () => {
-          assert.equal(validate(test.errortest).errors.length, test.errorlength);
+          assert.deepEqual(validate(test.errortest).errors.length, test.errorlength);
         });
         it("Error message test", () => {
-          assert.equal(validate(test.errortest).errors[0], test.errormsg);
+          assert.deepEqual(validate(test.errortest).errors[0], test.errormsg);
         });
       });
       describe(test.successtype, () => {
         it("validity test", () => {
-          assert.equal(validate(test.successtest).isValid, test.success);
+          assert.deepEqual(validate(test.successtest).isValid, test.success);
         });
         it("Error Length test", () => {
-          assert.equal(validate(test.successtest).errors.length, 0);
+          assert.deepEqual(validate(test.successtest).errors.length, 0);
         });
         it("Error message test", () => {
-          assert.equal(validate(test.successtest).errors.join(), "");
+          assert.deepEqual(validate(test.successtest).errors.join(), "");
         });
       });
     });
