@@ -226,7 +226,7 @@ const tests = [
       card3: owi(0).card("master").error("expects param to be a valid card").exec(),
     },
     successtest: {
-      card: owi(5300728394662128).card("master").error("expects param to be a valid card").exec(),
+      card: owi(5300756805462128).card("master").error("expects param to be a valid card").exec(),
     },
     errortype: "Failure test cases for card validity",
     successtype: "Success test cases for card validity",
