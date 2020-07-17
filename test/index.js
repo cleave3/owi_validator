@@ -236,7 +236,6 @@ const tests = [
     success: true,
     errormsg: "expects param to be a valid card",
   },
-
   {
     type: "Test for regex pattern",
     errortest: {
@@ -262,24 +261,24 @@ describe("owi-validator", () => {
     describe(test.type, () => {
       describe(test.errortype, () => {
         it("validity test", () => {
-          assert.deepEqual(validate(test.errortest).isValid, test.error);
+          assert.deepStrictEqual(validate(test.errortest).isValid, test.error);
         });
         it("Error Length test", () => {
-          assert.deepEqual(validate(test.errortest).errors.length, test.errorlength);
+          assert.deepStrictEqual(validate(test.errortest).errors.length, test.errorlength);
         });
         it("Error message test", () => {
-          assert.deepEqual(validate(test.errortest).errors[0], test.errormsg);
+          assert.deepStrictEqual(validate(test.errortest).errors[0], test.errormsg);
         });
       });
       describe(test.successtype, () => {
         it("validity test", () => {
-          assert.deepEqual(validate(test.successtest).isValid, test.success);
+          assert.deepStrictEqual(validate(test.successtest).isValid, test.success);
         });
         it("Error Length test", () => {
-          assert.deepEqual(validate(test.successtest).errors.length, 0);
+          assert.deepStrictEqual(validate(test.successtest).errors.length, 0);
         });
         it("Error message test", () => {
-          assert.deepEqual(validate(test.successtest).errors.join(), "");
+          assert.deepStrictEqual(validate(test.successtest).errors.join(), "");
         });
       });
     });
