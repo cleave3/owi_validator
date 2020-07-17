@@ -1,0 +1,12 @@
+{
+	"printWidth": 80,
+	"useTabs": true,
+	"bracketSpacing": true,
+	"cursorOffset": -1,
+	"semi": true,
+	"proseWrap": "preserve",
+	"requirePragma": true,
+	"arrowParens": "avoid",
+	"parser": "babel",
+	"trailingComma": "none"
+}
