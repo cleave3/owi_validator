@@ -158,7 +158,7 @@ class Validator {
     }
   
     exec() {
-      return this.errors !== '' ? this.errors : true;
+      return this.errors === null ? true : this.errors;
     }
   }
   
@@ -175,15 +175,11 @@ class Validator {
    * @returns {object} - response object
    */
  const validate = schema => {
-    try {
       let errors = [];
       for (let entity in schema) {
         if (schema[entity] !== true && schema[entity] !== null) errors.push(schema[entity].replace(/value/g, entity));
       }
       return errors.length > 0 ? { isValid: false, errors } : { isValid: true, errors };
-    } catch (error) {
-        return { isValid: false, error }
-    }
   };
   
   module.exports = {owi, validate}
