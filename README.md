@@ -4,13 +4,13 @@
 
 ### Getting Started
 
+<!-- using NPM -->
 ```sh
-using NPM
 npm install owi-validator
 
-OR
-using CDN
 ```
+<!-- OR
+using CDN -->
 ### Features
 owi-validator can be used vanilla Js projects, nodeJs and other javascript Applications. 
 ```javascript
