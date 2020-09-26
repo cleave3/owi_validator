@@ -167,14 +167,14 @@ class Validator {
    * @param {any} param - body parameter
    * @returns {object} - validator object
    */
-  export const owi = param => new Validator(param);
+ const owi = param => new Validator(param);
   
   /**
    *
    * @param {object} schema - schema object
    * @returns {object} - response object
    */
-  export const validate = schema => {
+ const validate = schema => {
     try {
       let errors = [];
       for (let entity in schema) {
@@ -186,3 +186,4 @@ class Validator {
     }
   };
   
+  module.exports = {owi, validate}
