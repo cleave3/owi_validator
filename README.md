@@ -5,8 +5,8 @@
 ### Getting Started
 
 <!-- using NPM -->
-```sh
 <!-- npm install owi-validator -->
+```sh
 
 ```
 <!-- OR
