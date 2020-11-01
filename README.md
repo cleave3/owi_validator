@@ -6,7 +6,7 @@
 
 <!-- using NPM -->
 ```sh
-npm install owi-validator
+<!-- npm install owi-validator -->
 
 ```
 <!-- OR
