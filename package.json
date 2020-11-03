@@ -1,5 +1,5 @@
 {
-  "name": "@cleave3/owi-validator",
+  "name": "owi-validator",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -15,7 +15,6 @@
     "type": "git",
     "url": "git+https://github.com/cleave3/owi_validator.git"
   },
-  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "keywords": [],
   "author": "owhiroro cleave <owhiroroeghele@gmail.com>",
   "license": "ISC",

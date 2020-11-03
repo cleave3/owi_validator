@@ -5,8 +5,12 @@
 ### Getting Started
 
 <!-- using NPM -->
+<!-- npm install owi-validator -->
+
+  <!-- // "publishConfig": { "registry": "https://npm.pkg.github.com/" }, -->
+  <!-- @cleave3:registry=https://npm.pkg.github.com/:_authToken=a079715f57e1c1add22fd8c299efc58fee260aad -->
+
 ```sh
-npm install owi-validator
 
 ```
 <!-- OR
