@@ -1,6 +1,6 @@
 {
   "name": "owi-validator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/cleave3/owi_validator.git"
   },
-  "keywords": [],
+  "keywords": ["validator", "nodejs", "javascript", "owi", "lightweight validator"],
   "author": "owhiroro cleave <owhiroroeghele@gmail.com>",
   "license": "ISC",
   "dependencies": {
