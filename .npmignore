@@ -1,0 +1,6 @@
+# Ignore test folder
+test/
+# Dependency directories
+node_modules/
+
+package-lock.json

@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { owi, validate } = require("../validator");
+const { owi, validate } = require("../");
 
 const tests = [
   {
@@ -201,7 +201,7 @@ const tests = [
     errorlength: 1,
     error: false,
     success: true,
-    errormsg: "value is required",
+    errormsg: "required is required",
   },
   {
     type: "Test for required field",
