@@ -1,6 +1,6 @@
 {
   "name": "owi-validator",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -18,7 +18,8 @@
   "keywords": ["validator", "nodejs", "javascript", "owi", "lightweight validator"],
   "author": "owhiroro cleave <owhiroroeghele@gmail.com>",
   "license": "ISC",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "codeclimate-test-reporter": "^0.5.1",
     "coveralls": "^3.1.0",
     "mocha": "^8.1.3",
