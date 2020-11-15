@@ -1,14 +1,9 @@
 # owi-validator
 **owi-validator** is a beginner friendly light weight validation library built with javascript. <br>
-[![Build Status](https://travis-ci.org/cleave3/owi_validator.svg?branch=master)](https://travis-ci.org/cleave3/owi_validator) [![Coverage Status](https://coveralls.io/repos/github/cleave3/owi_validator/badge.svg?branch=master)](https://coveralls.io/github/cleave3/owi_validator?branch=master) [![GitHub forks](https://img.shields.io/github/forks/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/network) [![GitHub stars](https://img.shields.io/github/stars/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/stargazers) [![GitHub issues](https://img.shields.io/github/issues/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/issues)
+[![Build Status](https://travis-ci.org/cleave3/owi_validator.svg?branch=master)](https://travis-ci.org/cleave3/owi_validator) [![Coverage Status](https://coveralls.io/repos/github/cleave3/owi_validator/badge.svg?branch=master)](https://coveralls.io/github/cleave3/owi_validator?branch=master) [![Github All Releases](https://img.shields.io/npm/dm/owi-validator.svg)](https://www.npmjs.com/package/owi-validator) [![GitHub forks](https://img.shields.io/github/forks/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/network) [![GitHub stars](https://img.shields.io/github/stars/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/stargazers) [![GitHub issues](https://img.shields.io/github/issues/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/issues)
 
 ### Getting Started
 
-<!-- using NPM -->
-<!-- npm install owi-validator -->
-
-  <!-- // "publishConfig": { "registry": "https://npm.pkg.github.com/" }, -->
-  <!-- @cleave3:registry=https://npm.pkg.github.com/:_authToken=a079715f57e1c1add22fd8c299efc58fee260aad -->
 
 ```sh
   npm install owi-validator
