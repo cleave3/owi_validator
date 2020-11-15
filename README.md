@@ -310,4 +310,6 @@ module.exports = router;
 </table>
 
 ### Contributors
-owhiroro cleave
+<a href='https://github.com/cleave3/owi_validator/graphs/contributors'>
+<img src="https://avatars3.githubusercontent.com/u/46753339?s=60&amp;v=4" class="avatar avatar-user" alt="cleave3" width="38" height="38" title='cleave3'> <img src="https://avatars3.githubusercontent.com/u/29524044?s=60&amp;v=4" class="avatar avatar-user" alt="geopic" width="38" height="38" title='geopic'>
+</a>
