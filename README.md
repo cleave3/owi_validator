@@ -21,6 +21,7 @@ owi-validator can be used vanilla Js projects, nodeJs and other javascript Appli
 - boolean()
 - email()
 - telephone()
+- url()
 - date()
 - card()
 - length()
@@ -232,6 +233,15 @@ module.exports = router;
       <code>owi("09078746744").telephone().exec()</code> is valid<br/>  
       <code>owi("+2340898944227").telephone().exec()</code> is valid<br/>  
       <code>owi("+1 000 4243 9889").telephone().exec()</code> is valid<br/> 
+    </td>
+  </tr>
+       <tr>
+    <td>url()</td>
+    <td>Validates if parameter is a valid url</td>
+    <td> 
+      <code>owi("https://.example.com").url().exec()</code> is valid<br/>  
+      <code>owi("http://.example.com").url().exec()</code> is valid<br/>  
+      <code>owi("www.example.com").url().exec()</code> is valid<br/> 
     </td>
   </tr>
        <tr>

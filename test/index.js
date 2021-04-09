@@ -191,7 +191,7 @@ const tests = [
   {
     type: "Test for undefined",
     errortest: {
-      required: owi().number().string().min().max().boolean().email().array().length().optional().date().regex().card().telephone().equal().required().error().exec(),
+      required: owi().number().string().min().max().boolean().email().array().length().optional().date().regex().card().telephone().url().equal().required().error().exec(),
     },
     successtest: {
       required: owi("testmode").required().error("param is required").exec(),
@@ -254,6 +254,23 @@ const tests = [
     success: true,
     errormsg: "Please provide a regex pattern",
   },
+  {
+    type: "Test for url validity",
+    errortest: {
+      url: owi("").url().error("expects param to be a valid url").exec()
+    },
+    successtest: {
+      url: owi("https://example.com").url().error("expects param to be a valid url").exec(),
+      url: owi("http://example.com").url().error("expects param to be a valid url").exec(),
+      url: owi("www.example.com").url().error("expects param to be a valid url").exec(),
+    },
+    errortype: "Failure test cases for url validity",
+    successtype: "Success test cases for url validity",
+    errorlength: 1,
+    error: false,
+    success: true,
+    errormsg: "expects param to be a valid url",
+  }
 ];
 
 describe("owi-validator", () => {

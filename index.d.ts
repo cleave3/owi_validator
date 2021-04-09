@@ -100,6 +100,17 @@ declare module 'owi-validator' {
     telephone(): this;
 
     /**
+     * Validates if parameter is a valid url
+     * 
+     * `owi("https://.example.com").url().exec()` is valid 
+     * 
+     * `owi("http://.example.com").url().exec()` is valid 
+     * 
+     * `owi("www.example.com").url().exec()` is valid
+    */
+    url(): this;
+
+    /**
      * verifies the validity and type of a card
      * @param card supported card types
      */

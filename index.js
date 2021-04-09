@@ -96,6 +96,10 @@ class Validator {
       if (!this.patterns.email.test(this.param.trim())) this.errors = `${this.paramtitle} is not valid`;
       return this;
     }
+
+    url() {
+      return this.regex(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi);
+    }
   
     telephone() {
       if (this.param === undefined) return this;
