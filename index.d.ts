@@ -1,4 +1,9 @@
 declare module 'owi-validator' {
+
+  interface ValidationSpec {
+    isValid: boolean
+    errors: { field: string, message: string }[]
+  }
   class Validator {
     constructor(param: any);
 
@@ -74,7 +79,7 @@ declare module 'owi-validator' {
      * `owi([1,"3", true]).array().exec()` is valid
      */
     array(): this;
-  
+
     /**
      * Validates if parameter is a valid email
      * 
@@ -87,7 +92,7 @@ declare module 'owi-validator' {
      * `owi("bar.com").email().exec()` is invalid
      */
     email(): this;
-  
+
     /**
      * Validates if parameter is a valid telephone number
      * 
@@ -115,8 +120,8 @@ declare module 'owi-validator' {
      * @param card supported card types
      */
     card(card: 'master' | 'visa' | 'electron' | 'maestro' | 'dankort'
-    | 'interpayment' | 'unionpay' | 'amex' | 'diners' | 'jcb' | 'discover'): this;
-  
+      | 'interpayment' | 'unionpay' | 'amex' | 'diners' | 'jcb' | 'discover'): this;
+
     /**
      * Validates if parameter is a valid date
      * 
@@ -125,7 +130,7 @@ declare module 'owi-validator' {
      * `owi("04/06/2020").date().exec()` is valid
      */
     date(): this;
-  
+
     /**
      * Validates if parameter is a valid boolean
      * 
@@ -134,7 +139,7 @@ declare module 'owi-validator' {
      * `owi(true | false).boolean().exec()` is invalid
      */
     boolean(): this;
-  
+
     /**
      * Validates if parameter matches a given regex pattern
      * 
@@ -143,26 +148,27 @@ declare module 'owi-validator' {
      * `owi("johndoe").regex(/[a-zA-Z]/).exec()` is valid
      */
     regex(regex: RegExp): this;
-  
+
     /**
      * optional chaining to pass your custom error message
      */
     error(errormsg: string): this;
-  
+
     /**
      * makes a parameter optional. Parameter is still accepted if null or empty
      */
     optional(): this;
-  
+
     /**
      * Validates if parameter is supplied
      */
     required(): this;
-  
-    exec(): true | any[];
+
+    exec(): ValidationSpec;
   }
 
   namespace OwiValidator {
+
     /**
      * Init validation class
      * @param param body parameter
@@ -175,7 +181,7 @@ declare module 'owi-validator' {
      * @param schema schema object
      * @returns response object
      */
-    export function validate(schema: object): { isValid: boolean; errors: any[]; };
+    export function validate(schema: object): ValidationSpec;
   }
 
   export = OwiValidator;

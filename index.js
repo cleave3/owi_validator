@@ -181,7 +181,12 @@ class Validator {
  const validate = schema => {
       let errors = [];
       for (let entity in schema) {
-        if (schema[entity] !== true && schema[entity] !== null) errors.push(schema[entity].replace(/value/g, entity));
+        if (schema[entity] !== true && schema[entity] !== null) {
+          errors.push({
+            field: entity,
+            message: schema[entity].replace(/value/g, entity)
+          });
+        }
       }
       return errors.length > 0 ? { isValid: false, errors } : { isValid: true, errors };
   };

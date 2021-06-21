@@ -284,7 +284,7 @@ describe("owi-validator", () => {
           assert.deepStrictEqual(validate(test.errortest).errors.length, test.errorlength);
         });
         it("Error message test", () => {
-          assert.deepStrictEqual(validate(test.errortest).errors[0], test.errormsg);
+          assert.deepStrictEqual(validate(test.errortest).errors[0].message, test.errormsg);
         });
       });
       describe(test.successtype, () => {
