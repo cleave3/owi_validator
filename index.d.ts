@@ -1,9 +1,14 @@
 declare module 'owi-validator' {
 
+  interface OwiError {
+    field: string;
+    message: string;
+  }
   interface ValidationSpec {
     isValid: boolean
-    errors: { field: string, message: string }[]
+    errors: OwiError[]
   }
+
   class Validator {
     constructor(param: any);
 
