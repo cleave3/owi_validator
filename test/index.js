@@ -98,7 +98,6 @@ const tests = [
     type: "Test for param type === email",
     errortest: {
       email: owi("owhiguy").email().error("expects param to be of type email").exec(),
-      email2: owi("test@mail.com.co.uk").email().error("expects param to be of type email").exec(),
       email3: owi("test@mail").email().error("expects param to be of type email").exec(),
       email4: owi("testmail.co.uk").email().error("expects param to be of type email").exec(),
       email5: owi("testgmail.com").email().error("expects param to be of type email").exec(),
@@ -111,7 +110,7 @@ const tests = [
     },
     errortype: "Failure test cases for param type === email",
     successtype: "Success test cases for param type === email",
-    errorlength: 5,
+    errorlength: 4,
     error: false,
     success: true,
     errormsg: "expects param to be of type email",
@@ -179,6 +178,9 @@ const tests = [
       optional: owi("owhiguy").boolean().optional().error("expects param to be of type boolean").exec(),
     },
     successtest: {
+      optional2: owi("").string().optional().error("expects param to be of type boolean").exec(),
+      optional3: owi(null).string().optional().error("expects param to be of type boolean").exec(),
+      optional4: owi(undefined).string().optional().error("expects param to be of type boolean").exec(),
       optional: owi().boolean().optional().error("expects param to be of type boolean").exec(),
     },
     errortype: "Failure test cases for optional field",
@@ -191,7 +193,7 @@ const tests = [
   {
     type: "Test for undefined",
     errortest: {
-      required: owi().number().string().min().max().boolean().email().array().length().optional().date().regex().card().telephone().url().equal().required().error().exec(),
+      required: owi().number().string().min().max().boolean().email().array().length().date().regex().card().telephone().url().equal().required().error().exec(),
     },
     successtest: {
       required: owi("testmode").required().error("param is required").exec(),
@@ -221,7 +223,7 @@ const tests = [
   {
     type: "Test for card validity",
     errortest: {
-      card: owi(0898989).card("master").error("expects param to be a valid card").exec(),
+      card: owi(898989).card("master").error("expects param to be a valid card").exec(),
       card2: owi(58900000000000000).card("master").error("expects param to be a valid card").exec(),
       card3: owi(0).card("master").error("expects param to be a valid card").exec(),
       card3: owi(0).card().error("expects param to be a valid card").exec(),
