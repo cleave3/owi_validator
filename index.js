@@ -152,7 +152,7 @@ class Validator {
     }
   
     optional() {
-      if (this.param === undefined || this?.param?.trim() === "" || this.param === null) this.errors = null;
+      if (this.param === undefined) this.errors = null;
       return this;
     }
   
