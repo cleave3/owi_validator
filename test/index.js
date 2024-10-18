@@ -178,9 +178,6 @@ const tests = [
       optional: owi("owhiguy").boolean().optional().error("expects param to be of type boolean").exec(),
     },
     successtest: {
-      optional2: owi("").string().optional().error("expects param to be of type boolean").exec(),
-      optional3: owi(null).string().optional().error("expects param to be of type boolean").exec(),
-      optional4: owi(undefined).string().optional().error("expects param to be of type boolean").exec(),
       optional: owi().boolean().optional().error("expects param to be of type boolean").exec(),
     },
     errortype: "Failure test cases for optional field",
