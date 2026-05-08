@@ -173,21 +173,93 @@ declare module 'owi-validator' {
   }
 
   namespace OwiValidator {
+    export function owi(param?: any): Validator;
+    export namespace owi {
+      export function string(): OwiString;
+      export function number(): OwiNumber;
+      export function boolean(): OwiBoolean;
+      export function object<T extends Record<string, OwiSchema<any>>>(shape: T): OwiObject<T>;
+      export function array<T extends OwiSchema<any>>(element: T): OwiArray<T>;
+      export function enum_<T extends readonly string[]>(values: T): OwiEnum<T>;
+      export function union<T extends readonly OwiSchema<any>[]>(schemas: T): OwiUnion<T>;
+    }
 
     /**
-     * Init validation class
-     * @param param body parameter
-     * @returns validator object
-     */
-    export function owi(param: any): Validator;
-
-    /**
-     *
      * @param schema schema object
      * @returns response object
      */
     export function validate(schema: object): ValidationSpec;
+
+    export interface RefinementCtx {
+      addIssue(issue: { path?: (string | number)[]; message: string; code?: string }): void;
+    }
+
+    export class OwiError extends Error {
+      errors: { path: (string | number)[]; message: string }[];
+    }
+
+    export class OwiSchema<T> {
+      _type: T;
+      optional(): OwiSchema<T | undefined>;
+      default(val: T | (() => T)): OwiSchema<T>;
+      transform<U>(fn: (val: T) => U): OwiSchema<U>;
+      refine(fn: (val: T) => boolean, message?: string): this;
+      superRefine(fn: (val: T, ctx: RefinementCtx) => void): this;
+      parse(data: unknown): T;
+      safeParse(data: unknown): { success: true; data: T } | { success: false; error: OwiError };
+    }
+
+    export class OwiString extends OwiSchema<string> {
+      min(val: number, msg?: string): this;
+      max(val: number, msg?: string): this;
+      email(msg?: string): this;
+      regex(val: RegExp, msg?: string): this;
+      url(msg?: string): this;
+    }
+
+    export class OwiNumber extends OwiSchema<number> {
+      min(val: number, msg?: string): this;
+      max(val: number, msg?: string): this;
+    }
+
+    export class OwiBoolean extends OwiSchema<boolean> {}
+
+    export class OwiObject<T extends Record<string, OwiSchema<any>>> extends OwiSchema<{ [K in keyof T]: T[K]['_type'] }> {
+      strict(): this;
+      passthrough(): this;
+      strip(): this;
+      extend<U extends Record<string, OwiSchema<any>>>(shape: U): OwiObject<T & U>;
+    }
+
+    export class OwiArray<T extends OwiSchema<any>> extends OwiSchema<T['_type'][]> {
+      min(val: number, msg?: string): this;
+      max(val: number, msg?: string): this;
+    }
+
+    export class OwiEnum<T extends readonly string[]> extends OwiSchema<T[number]> {}
+    export class OwiUnion<T extends readonly OwiSchema<any>[]> extends OwiSchema<T[number]['_type']> {}
+
+    export type Infer<T extends OwiSchema<any>> = T['_type'];
   }
 
-  export = OwiValidator;
+  interface ErrorOptions {
+    error?: string;
+  }
+  type ErrMsg = string | ErrorOptions;
+
+  interface OwiExport {
+    (param?: any): OwiValidator.Validator;
+    string(options?: ErrMsg): OwiValidator.OwiString;
+    number(options?: ErrMsg): OwiValidator.OwiNumber;
+    boolean(options?: ErrMsg): OwiValidator.OwiBoolean;
+    object<T extends Record<string, OwiValidator.OwiSchema<any>>>(shape: T, options?: ErrMsg): OwiValidator.OwiObject<T>;
+    array<T extends OwiValidator.OwiSchema<any>>(element: T, options?: ErrMsg): OwiValidator.OwiArray<T>;
+    enum<T extends readonly string[]>(values: T, options?: ErrMsg): OwiValidator.OwiEnum<T>;
+    union<T extends readonly OwiValidator.OwiSchema<any>[]>(schemas: T, options?: ErrMsg): OwiValidator.OwiUnion<T>;
+  }
+
+  declare const owi: OwiExport;
+  declare function validate(schema: object): OwiValidator.ValidationSpec;
+  
+  export { owi, validate, OwiValidator as Types };
 }

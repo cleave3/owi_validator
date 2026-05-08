@@ -1,325 +1,256 @@
 # owi-validator
-**owi-validator** is a beginner friendly light weight validation library built with javascript. <br>
-[![Build Status](https://travis-ci.org/cleave3/owi_validator.svg?branch=master)](https://travis-ci.org/cleave3/owi_validator) [![Coverage Status](https://coveralls.io/repos/github/cleave3/owi_validator/badge.svg?branch=master)](https://coveralls.io/github/cleave3/owi_validator?branch=master) [![Github All Releases](https://img.shields.io/npm/dm/owi-validator.svg)](https://www.npmjs.com/package/owi-validator) [![GitHub forks](https://img.shields.io/github/forks/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/network) [![GitHub stars](https://img.shields.io/github/stars/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/stargazers) [![GitHub issues](https://img.shields.io/github/issues/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/issues)
 
-### Getting Started
+**owi-validator** is a beginner-friendly, lightweight validation library built with JavaScript. It features a powerful, dual-engine architecture offering both a simple chainable API (Legacy) and a robust, Zod-like Schema-First API for complex data structures and TypeScript inference.
 
+[![Coverage Status](https://coveralls.io/repos/github/cleave3/owi_validator/badge.svg?branch=master)](https://coveralls.io/github/cleave3/owi_validator?branch=master) [![Github All Releases](https://img.shields.io/npm/dm/owi-validator.svg)](https://www.npmjs.com/package/owi-validator) [![GitHub forks](https://img.shields.io/github/forks/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/network) [![GitHub stars](https://img.shields.io/github/stars/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/stargazers) [![GitHub issues](https://img.shields.io/github/issues/cleave3/owi_validator)](https://github.com/cleave3/owi_validator/issues)
+
+## Installation
+
+You can install `owi-validator` using npm or yarn:
 
 ```sh
-  npm install owi-validator
+npm install owi-validator
+# OR
+yarn add owi-validator
 ```
-<!-- OR
-using CDN -->
-### Features
-owi-validator can be used vanilla Js projects, nodeJs and other javascript Applications. 
-```javascript
-- max()
-- min()
-- equal()
-- number()
-- string()
-- boolean()
-- email()
-- telephone()
-- url()
-- date()
-- card()
-- length()
-- regex()
-- array()
-- optional()
-- required()
-- error()
-```
-### USAGE
 
-**Basic usage**
+---
+
+## 🚀 The Schema Engine (New API)
+
+The new Schema Engine is highly recommended for modern applications. It is heavily inspired by Zod and allows you to define a schema once, infer TypeScript types automatically, and validate complex, nested payloads safely.
+
+### 1. Primitives
+
+You can validate basic data types using primitive builders. You can optionally pass a custom error message to be used if the type check fails.
+
 ```js
-//using ES5
+const { owi } = require('owi-validator');
+
+const stringSchema = owi.string();
+const numberSchema = owi.number("Must be a valid number"); // Custom type error
+const boolSchema = owi.boolean({ error: "Must be true or false" });
+
+stringSchema.parse("hello"); // Returns "hello"
+numberSchema.parse(42); // Returns 42
+```
+
+**Primitive Constraints:**
+You can chain constraints to primitives. You can optionally pass a custom error message for the constraint as the second argument.
+* **Strings:** `.min(len, msg)`, `.max(len, msg)`, `.email(msg)`, `.regex(pattern, msg)`, `.url(msg)`
+* **Numbers:** `.min(val, msg)`, `.max(val, msg)`
+
+```js
+owi.string().min(3, "Too short!").max(20).email("Invalid email").parse("test@example.com");
+owi.number().min(18, "You must be an adult").max(99).parse(25);
+```
+
+### 2. Objects and Unknown Keys
+
+Validate objects by defining their "shape". 
+
+```js
+const userSchema = owi.object({
+  name: owi.string().min(2),
+  age: owi.number()
+});
+```
+
+**Unknown Keys (Passthrough by default):**
+By default, `owi.object()` allows unknown keys and passes them through to the output. This is great for wrapping objects like Express `req` objects.
+
+You can modify this behavior:
+```js
+// 1. Passthrough (Default) - Allows unknown keys and keeps them in the output
+userSchema.parse({ name: 'John', age: 30, admin: true }); // Returns { name: 'John', age: 30, admin: true }
+
+// 2. Strict - Throws an error on unknown keys
+userSchema.strict().parse({ name: 'John', age: 30, admin: true }); // Throws OwiError!
+
+// 3. Strip - Silently remove unknown keys
+userSchema.strip().parse({ name: 'John', age: 30, admin: true }); // Returns { name: 'John', age: 30 }
+```
+
+### 3. Arrays, Enums, and Unions
+
+```js
+// Arrays
+const tagsSchema = owi.array(owi.string()).min(1, "At least one tag required");
+tagsSchema.parse(["javascript", "nodejs"]);
+
+// Enums (Restrict values to a specific set)
+const statusSchema = owi.enum(["active", "inactive"], { error: "Invalid status" });
+statusSchema.parse("active");
+
+// Unions (Allow data to match one of several schemas)
+const stringOrNumber = owi.union([owi.string(), owi.number()]);
+stringOrNumber.parse("hello"); // Valid
+stringOrNumber.parse(42);      // Valid
+```
+
+### 4. Optional and Default Values
+
+```js
+const schema = owi.object({
+  bio: owi.string().optional(),
+  role: owi.string().default('user')
+});
+
+schema.parse({}); 
+// Returns: { bio: undefined, role: 'user' }
+```
+
+### 5. Transforms and Refinements
+
+You can mold the data into the shape you want using `.transform()`, and add custom validation logic using `.refine()`.
+
+```js
+// Transform a string to uppercase
+const upperString = owi.string().transform(val => val.toUpperCase());
+upperString.parse('hello'); // Returns 'HELLO'
+
+// Custom refinement logic
+const evenNumber = owi.number().refine(val => val % 2 === 0, 'Must be an even number');
+evenNumber.parse(4); // Valid
+```
+
+### 6. Advanced Validation with `superRefine`
+
+For complex, cross-field validation, use `.superRefine((data, ctx) => { ... })`. This allows you to inspect the entire object and attach errors to specific paths.
+
+```js
+const rentalSchema = owi.object({
+  rentalType: owi.enum(["FIXED", "FLAT"]),
+  dailyRate: owi.number().optional(),
+  flatRate: owi.number().optional()
+}).superRefine((data, ctx) => {
+  if (data.rentalType === "FIXED" && data.dailyRate === undefined) {
+    ctx.addIssue({ path: ["dailyRate"], message: "dailyRate is required for FIXED rentals" });
+  }
+  if (data.rentalType === "FLAT" && data.flatRate === undefined) {
+    ctx.addIssue({ path: ["flatRate"], message: "flatRate is required for FLAT rentals" });
+  }
+});
+```
+
+### 7. Execution: `parse` vs `safeParse`
+
+**`parse(data)`:** Throws an `OwiError` if validation fails. The error object contains a detailed array of issues indicating exactly where the validation failed.
+```js
+try {
+  schema.parse(badData);
+} catch (error) {
+  console.log(error.errors); // Array of { path: (string|number)[], message: string }
+}
+```
+
+**`safeParse(data)`:** Does NOT throw. It returns an object containing `{ success: true, data }` or `{ success: false, error }`.
+```js
+const result = schema.safeParse(badData);
+if (!result.success) {
+  console.log(result.error.errors);
+} else {
+  console.log(result.data); // Safely parsed and typed data
+}
+```
+
+### 8. TypeScript Support
+
+Extract the inferred TypeScript type from any schema using `Types.Infer<typeof schema>`.
+
+```typescript
+import { owi, Types } from 'owi-validator';
+
+const personSchema = owi.object({
+  name: owi.string(),
+  age: owi.number()
+});
+
+type Person = Types.Infer<typeof personSchema>;
+// Equivalent to: { name: string; age: number; }
+```
+
+---
+
+## 🏛️ The Legacy API
+
+The original `owi-validator` API evaluates rules immediately upon execution. It is fully supported for backwards compatibility.
+
+### Basic usage
+
+```js
 const { owi, validate } = require("owi-validator");
 
-//OR
-
-//using ES6
-import { owi, validate } from "owi-validator";
-
-const category = "category1";
-const price = 2000;
-const productName = "product1";
-const quantity = 1;
-const description = "desc";
-const visibility = "public";
-
 const schema = {
-  productName: owi(productName)
+  productName: owi("Laptop")
     .string()
     .min(2)
     .error('product name must be atleast 2 characters long')
     .required()
     .exec(),
-    category: owi(category).string().error('category is required').required().exec(),
-      price: owi(price).number().error('price must be a number').required().exec(),
-      quantity: owi(quantity).number().error('quantity must be a number').optional().exec(),
-      description: owi(description).string().error('description is required').required().exec(),
-      visibility: owi(visibility)
-        .regex(/^(public|private)$/)
-        .error('visibilty must be either public or private')
-        .required()
-        .exec(),
+  price: owi(2000)
+    .number()
+    .error('price must be a number')
+    .required()
+    .exec(),
 }
 
 const check = validate(schema);
 
-//const {isValid, errors } = check;
-// isvalid: boolean ( true || false )
-// errors: Array - validation errors if any
-
-if(check.isValid) {
-  //validation successfull
-  // do success action
+if (check.isValid) {
+  // validation successful
 } else {
-  // Errors found
   console.log(check.errors); // Array of validation errors
 }
 ```
 
-**using as middleware in NodeJs**
+### Using as Express Middleware
+
 ```js
-
-//Application Entry Point index.js
-
-const express = require("express");
-const router = require("./route");
-
-const app = express();
-
-const PORT = process.env.PORT || 3000;
-
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use(router);
-
-app.listen(PORT, () => console.log(`App is running at port ${PORT}`));
-
-//Validation Class validator.js
 const { owi, validate } = require("owi-validator");
 
-class Validate {
-  static validatedata({ body: { name, email, password } }, res, next) {
+const validateData = (req, res, next) => {
+  const check = validate({
+    name: owi(req.body.name).string().min(2).required().error("Name must be atleast 2 characters long").exec(),
+    email: owi(req.body.email).email().required().error("Please enter a valid email").exec(),
+    password: owi(req.body.password).string().min(6).max(10).exec(),
+  });
 
-    const check = validate({
-      name: owi(name).string().min(2).required().error("Name must be atleast 2 characters long").exec(),
-      email: owi(email).email().required().error("Please enter a valid email").exec(),
-      password: owi(password).string().min(6).max(10).exec(),
-    });
-
-    return check.isValid ? 
-      next() : 
-      return res.status(code).json({ status, code, errors: check.errors });
+  if (check.isValid) {
+    next();
+  } else {
+    return res.status(400).json({ errors: check.errors });
   }
-}
-
-module.exports = Validate;
-
-
-//Router router.js file
-const { Router } = require("express");
-const TestController = require("../controller/dummy");
-const Validate = require("../validator");
-
-const router = Router();
-
-const { validatedata } = Validate;
-const { postData } = TestController;
-
-router.get("/", (req, res) => res.send("owi-validator is live"));
-router.post("/data", validatedata, postData);
-
-module.exports = router;
-
+};
 ```
-<table>
-  <thead>
-  <tr>
-    <th>Method</th>
-    <th>Description</th>
-    <th>Usage</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>max()</td>
-    <td> 
-      - When used to validate a string, max length of string is checked </br>
-      - When used to validate an integer, max value of integer is checked
-    </td>
-    <td> 
-      <code>owi(integer).max(20).exec()</code><br/>
-      <code>owi(string).max(20).exec()</code> <br/>
-        where string could be any string, e.g "johndoe", and
-        where integer could be any integer, e.g 20    
-    </td>
-  </tr>
-  <tr>
-    <td>min()</td>
-    <td> 
-      - When used to validate a string, min length of string is checked </br>
-      - When used to validate an integer, min value of integer is checked
-    </td>
-    <td> 
-      <code>owi(integer).min(20).exec()</code> <br/>
-      <code>owi(string).min(20).exec()</code><br/>
-        where string could be any string, e.g "johndoe", and
-        where integer could be any integer, e.g 20    
-    </td>
-  </tr>
-  <tr>
-    <td>equal()</td>
-    <td> Validate the equality of a parameter</td>
-    <td> 
-      <code>owi(20).equal(20).exec()</code> is valid<br/>
-      <code>owi(true).equal(false).exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-    <tr>
-    <td>number()</td>
-    <td> Check if parameter is a valid number
-    </td>
-    <td> 
-      <code>owi(20).number().exec()</code> is valid<br/>
-      <code>owi(true).number().exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-  <tr>
-    <td>string()</td>
-    <td> Check if parameter is a valid string</td>
-    <td> 
-      <code>owi("20").string().exec()</code> is valid<br/>
-      <code>owi(20).string().exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-    <tr>
-    <td>boolean()</td>
-    <td> Validates if parameter is a valid boolean</td>
-    <td> 
-      <code>owi("string" | 20 | []).boolean().exec()</code> is valid<br/>
-      <code>owi(true | false).boolean().exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-      <tr>
-    <td>length()</td>
-    <td> Validates the length of an string or integer</td>
-    <td> 
-      <code>owi("foo").length(3).exec()</code> is valid<br/>
-      <code>owi(5).length(1).exec()</code> is valid<br/>  
-      <code>owi(55).length(1).exec()</code> is invalid<br/>  
-      <code>owi("bar").length(5).exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-    <tr>
-    <td>email()</td>
-    <td>Validates if parameter is a valid email</td>
-    <td> 
-      <code>owi("owi@mail.com").email().exec()</code> is valid<br/>  
-      <code>owi("owi@mail.co.uk").email().exec()</code> is valid<br/>  
-      <code>owi("owimail.com").email().exec()</code> is invalid<br/>  
-      <code>owi("bar.com").email().exec()</code> is invalid<br/>  
-    </td>
-  </tr>
-     <tr>
-    <td>telephone()</td>
-    <td>Validates if parameter is a valid telephone number</td>
-    <td> 
-      <code>owi("09078746744").telephone().exec()</code> is valid<br/>  
-      <code>owi("+2340898944227").telephone().exec()</code> is valid<br/>  
-      <code>owi("+1 000 4243 9889").telephone().exec()</code> is valid<br/> 
-    </td>
-  </tr>
-       <tr>
-    <td>url()</td>
-    <td>Validates if parameter is a valid url</td>
-    <td> 
-      <code>owi("https://.example.com").url().exec()</code> is valid<br/>  
-      <code>owi("http://.example.com").url().exec()</code> is valid<br/>  
-      <code>owi("www.example.com").url().exec()</code> is valid<br/> 
-    </td>
-  </tr>
-       <tr>
-    <td>date()</td>
-    <td>Validates if parameter is a valid date</td>
-    <td> 
-      <code>owi("04-06-2020").date().exec()</code> is valid<br/>  
-      <code>owi("04/06/2020").date().exec()</code> is valid<br/>  
-    </td>
-  </tr>
-    <tr>
-    <td>array()</td>
-    <td>Validates if parameter is an array</td>
-    <td> 
-      <code>owi([]).array().exec()</code> is valid<br/>  
-      <code>owi([1,"3", true]).array().exec()</code> is valid<br/>  
-    </td>
-  </tr>
-      <tr>
-    <td>card()</td>
-    <td>verifies the validity and type of a card</td>
-    <td> 
-      <code>owi(carddigits).card(cardtype).exec()</code> <br/>
-       supported card types are:
-      <ul>
-      <li>master</li>
-      <li>visa</li>
-      <li>electron</li>
-      <li>maestro</li>
-      <li>dankort</li>
-      <li>interpayment</li>
-      <li>unionpay</li>
-      <li>amex</li>
-      <li>diners</li>
-      <li>jcb</li>
-      <li>discover</li>
-      </ul>
-    </td>
-  </tr>
-    </tr>
-    <tr>
-    <td>regex()</td>
-    <td>Validates if parameter matches a given regex pattern</td>
-    <td> 
-      <code>owi(param).regex(regexpattern).exec()</code> E.g <br/>  
-      <code>owi("johndoe").regex(/[a-zA-Z]/).exec()</code> is valid<br/>   
-    </td>
-  </tr>
-      </tr>
-    <tr>
-    <td>required()</td>
-    <td>Validates if parameter is supplied</td>
-    <td>  
-      <code>owi(param).regex(pattern).required().exec()</code><br/>   
-      <code>owi(param).string().required().exec()</code><br/>   
-      <code>owi(param).number().min(1).max(999999).required().exec()</code><br/>   
-    </td>
-  </tr>
-      <tr>
-    <td>optional()</td>
-    <td>makes a parameter optional. Parameter is still accepted if null or empty</td>
-    <td>  
-      <code>owi(param).regex(pattern).optional().exec()</code><br/>   
-      <code>owi(param).string().optional().exec()</code><br/>   
-      <code>owi(param).number().min(1).max(999999).optional().exec()</code><br/>   
-    </td>
-  </tr>
-        <tr>
-    <td>error()</td>
-    <td>optional chaining to pass your custom error message</td>
-    <td>  
-      <code>owi(param).regex(pattern).required().error('Name must be atleast 2 characters long').exec()</code><br/> 
-    </td>
-  </tr>
-  </tbody>
-</table>
 
-### Contributors
+### Legacy Methods Reference
+
+| Method | Description | Example Usage |
+|--------|-------------|---------------|
+| `max()` | Validates max string length or max integer value | `owi(string).max(20).exec()` |
+| `min()` | Validates min string length or min integer value | `owi(integer).min(20).exec()` |
+| `equal()` | Validates the equality of a parameter | `owi(20).equal(20).exec()` |
+| `number()` | Checks if parameter is a valid number | `owi(20).number().exec()` |
+| `string()` | Checks if parameter is a valid string | `owi("20").string().exec()` |
+| `boolean()` | Checks if parameter is a valid boolean | `owi(true).boolean().exec()` |
+| `length()` | Validates the exact length of a string/integer | `owi("foo").length(3).exec()` |
+| `email()` | Checks if parameter is a valid email | `owi("user@mail.com").email().exec()` |
+| `telephone()` | Checks if parameter is a valid telephone | `owi("+1 000 4243 9889").telephone().exec()` |
+| `url()` | Checks if parameter is a valid url | `owi("https://example.com").url().exec()` |
+| `date()` | Checks if parameter is a valid date | `owi("04-06-2020").date().exec()` |
+| `array()` | Checks if parameter is an array | `owi([]).array().exec()` |
+| `card()` | Validates a specific credit card type | `owi("...").card('master').exec()` |
+| `regex()` | Checks if parameter matches a regex pattern | `owi("john").regex(/[a-zA-Z]/).exec()` |
+| `required()` | Ensures a parameter is supplied | `owi(param).required().exec()` |
+| `optional()` | Makes a parameter optional | `owi(param).optional().exec()` |
+| `error()` | Chainable custom error message | `owi(param).error('Custom message').exec()` |
+
+---
+
+## Contributors
+
 <a href='https://github.com/cleave3/owi_validator/graphs/contributors'>
-<img src="https://avatars3.githubusercontent.com/u/46753339?s=60&amp;v=4" class="avatar avatar-user" alt="cleave3" width="38" height="38" title='cleave3'> <img src="https://avatars3.githubusercontent.com/u/29524044?s=60&amp;v=4" class="avatar avatar-user" alt="geopic" width="38" height="38" title='geopic'>
+  <img src="https://avatars3.githubusercontent.com/u/46753339?s=60&v=4" class="avatar avatar-user" alt="cleave3" width="38" height="38" title='cleave3'> 
+  <img src="https://avatars3.githubusercontent.com/u/29524044?s=60&v=4" class="avatar avatar-user" alt="geopic" width="38" height="38" title='geopic'>
 </a>
