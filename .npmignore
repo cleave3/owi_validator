@@ -4,4 +4,15 @@ test/
 node_modules/
 dist/
 
+# Lock files
 package-lock.json
+yarn.lock
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# CI and config files
+.github/
+.travis.yml
+.prettierrc
