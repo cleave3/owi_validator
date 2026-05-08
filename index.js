@@ -263,7 +263,7 @@ class Validator {
         } else if (this._isOptional) {
           return { value: data, errors: [] }; // allow null/undefined if optional
         } else {
-          return { value: data, errors: [{ path, message: "Required" }] };
+          return { value: data, errors: [{ path, message: `${this._typeErrorMessage || `${path.join('.')} is required`}` }] };
         }
       }
   
