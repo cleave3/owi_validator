@@ -1,7 +1,7 @@
 {
   "name": "owi-validator",
-  "version": "2.0.0",
-  "description": "",
+  "version": "2.0.1",
+  "description": "A lightweight, Zod-like, schema-first validation library for TypeScript and JavaScript.",
   "main": "index.js",
   "scripts": {
     "test": "nyc --reporter=html --reporter=text mocha test  --exit || true",
@@ -21,7 +21,12 @@
     "javascript",
     "Typescript",
     "owi",
-    "lightweight validator"
+    "lightweight validator",
+    "schema",
+    "zod-alternative",
+    "object-validation",
+    "type-safe",
+    "data-validation"
   ],
   "author": "owhiroro cleave <owhiroroeghele@gmail.com>",
   "license": "ISC",
