@@ -191,4 +191,313 @@ class Validator {
       return errors.length > 0 ? { isValid: false, errors } : { isValid: true, errors };
   };
   
-  module.exports = {owi, validate}
+  class OwiError extends Error {
+    constructor(errors) {
+      super("Validation failed");
+      this.name = "OwiError";
+      this.errors = errors; // Array of { path: (string|number)[], message: string }
+    }
+  }
+  
+  class OwiSchema {
+    constructor(options) {
+      this._isOptional = false;
+      this._defaultValue = undefined;
+      this._transforms = [];
+      this._refinements = [];
+      this._superRefinements = [];
+      
+      if (typeof options === 'string') {
+        this._typeErrorMessage = options;
+      } else if (options && typeof options === 'object' && options.error) {
+        this._typeErrorMessage = options.error;
+      }
+    }
+  
+    optional() {
+      this._isOptional = true;
+      return this;
+    }
+  
+    default(val) {
+      this._defaultValue = val;
+      this._isOptional = true;
+      return this;
+    }
+  
+    transform(fn) {
+      this._transforms.push(fn);
+      return this;
+    }
+  
+    refine(fn, message) {
+      this._refinements.push({ fn, message: message || "Invalid value" });
+      return this;
+    }
+  
+    superRefine(fn) {
+      this._superRefinements.push(fn);
+      return this;
+    }
+  
+    parse(data) {
+      const result = this._parse(data, []);
+      if (result.errors.length > 0) {
+        throw new OwiError(result.errors);
+      }
+      return result.value;
+    }
+  
+    safeParse(data) {
+      const result = this._parse(data, []);
+      if (result.errors.length > 0) {
+        return { success: false, error: new OwiError(result.errors) };
+      }
+      return { success: true, data: result.value };
+    }
+  
+    _parse(data, path) {
+      if (data === undefined || data === null) {
+        if (this._defaultValue !== undefined) {
+          data = typeof this._defaultValue === 'function' ? this._defaultValue() : this._defaultValue;
+        } else if (this._isOptional) {
+          return { value: data, errors: [] }; // allow null/undefined if optional
+        } else {
+          return { value: data, errors: [{ path, message: "Required" }] };
+        }
+      }
+  
+      let result = this._typeCheck(data, path);
+      if (result.errors.length > 0) {
+        return result;
+      }
+  
+      let value = result.value;
+      for (const transform of this._transforms) {
+        try {
+          value = transform(value);
+        } catch (e) {
+          return { value, errors: [{ path, message: e.message || "Transform failed" }] };
+        }
+      }
+  
+      for (const refinement of this._refinements) {
+        if (!refinement.fn(value)) {
+          return { value, errors: [{ path, message: refinement.message }] };
+        }
+      }
+  
+      if (this._superRefinements.length > 0) {
+        let superErrors = [];
+        const ctx = {
+          addIssue: (issue) => {
+            superErrors.push({
+              path: [...path, ...(issue.path || [])],
+              message: issue.message || issue.error
+            });
+          }
+        };
+        for (const superRefine of this._superRefinements) {
+          superRefine(value, ctx);
+        }
+        if (superErrors.length > 0) {
+          return { value, errors: superErrors };
+        }
+      }
+  
+      return { value, errors: [] };
+    }
+  
+    _typeCheck(data, path) {
+      return { value: data, errors: [] };
+    }
+  }
+  
+  class OwiString extends OwiSchema {
+    constructor(options) {
+      super(options);
+      this._checks = [];
+    }
+    
+    min(val, msg) { this._checks.push({ name: 'min', val, msg }); return this; }
+    max(val, msg) { this._checks.push({ name: 'max', val, msg }); return this; }
+    email(msg) { this._checks.push({ name: 'email', msg }); return this; }
+    regex(val, msg) { this._checks.push({ name: 'regex', val, msg }); return this; }
+    url(msg) { this._checks.push({ name: 'url', msg }); return this; }
+  
+    _typeCheck(data, path) {
+      if (typeof data !== 'string') {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || "Expected string, received " + typeof data }] };
+      }
+      for (const check of this._checks) {
+        if (check.name === 'min' && data.length < check.val) return { value: data, errors: [{ path, message: check.msg || `String must contain at least ${check.val} character(s)` }] };
+        if (check.name === 'max' && data.length > check.val) return { value: data, errors: [{ path, message: check.msg || `String must contain at most ${check.val} character(s)` }] };
+        if (check.name === 'email' && !/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(data)) return { value: data, errors: [{ path, message: check.msg || "Invalid email" }] };
+        if (check.name === 'regex' && !check.val.test(data)) return { value: data, errors: [{ path, message: check.msg || "Invalid format" }] };
+        if (check.name === 'url' && !/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi.test(data)) return { value: data, errors: [{ path, message: check.msg || "Invalid url" }] };
+      }
+      return { value: data, errors: [] };
+    }
+  }
+  
+  class OwiNumber extends OwiSchema {
+    constructor(options) {
+      super(options);
+      this._checks = [];
+    }
+    min(val, msg) { this._checks.push({ name: 'min', val, msg }); return this; }
+    max(val, msg) { this._checks.push({ name: 'max', val, msg }); return this; }
+    
+    _typeCheck(data, path) {
+      if (typeof data !== 'number' || isNaN(data)) {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || "Expected number, received " + typeof data }] };
+      }
+      for (const check of this._checks) {
+        if (check.name === 'min' && data < check.val) return { value: data, errors: [{ path, message: check.msg || `Number must be greater than or equal to ${check.val}` }] };
+        if (check.name === 'max' && data > check.val) return { value: data, errors: [{ path, message: check.msg || `Number must be less than or equal to ${check.val}` }] };
+      }
+      return { value: data, errors: [] };
+    }
+  }
+  
+  class OwiBoolean extends OwiSchema {
+    constructor(options) { super(options); }
+    _typeCheck(data, path) {
+      if (typeof data !== 'boolean') {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || "Expected boolean, received " + typeof data }] };
+      }
+      return { value: data, errors: [] };
+    }
+  }
+  
+  class OwiObject extends OwiSchema {
+    constructor(shape, options) {
+      super(options);
+      this._shape = shape;
+      this._strict = false; // Passthrough by default
+      this._passthrough = true;
+    }
+    
+    strict() { this._strict = true; this._passthrough = false; return this; }
+    passthrough() { this._passthrough = true; this._strict = false; return this; }
+    strip() { this._strict = false; this._passthrough = false; return this; }
+    
+    extend(shape) {
+      return new OwiObject({ ...this._shape, ...shape });
+    }
+  
+    _typeCheck(data, path) {
+      if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || "Expected object, received " + (data === null ? "null" : typeof data) }] };
+      }
+      
+      let errors = [];
+      let parsedObject = {};
+      
+      for (const key in this._shape) {
+        const fieldSchema = this._shape[key];
+        const result = fieldSchema._parse(data[key], [...path, key]);
+        if (result.errors.length > 0) {
+          errors.push(...result.errors);
+        } else if (result.value !== undefined || key in data) {
+          parsedObject[key] = result.value;
+        }
+      }
+      
+      if (this._strict) {
+        for (const key in data) {
+          if (!(key in this._shape)) {
+            errors.push({ path: [...path, key], message: `Unrecognized key(s) in object: '${key}'` });
+          }
+        }
+      } else if (this._passthrough) {
+        for (const key in data) {
+          if (!(key in this._shape)) {
+            parsedObject[key] = data[key];
+          }
+        }
+      }
+      
+      return { value: parsedObject, errors };
+    }
+  }
+  
+  class OwiArray extends OwiSchema {
+    constructor(element, options) {
+      super(options);
+      this._element = element;
+      this._checks = [];
+    }
+    
+    min(val, msg) { this._checks.push({ name: 'min', val, msg }); return this; }
+    max(val, msg) { this._checks.push({ name: 'max', val, msg }); return this; }
+  
+    _typeCheck(data, path) {
+      if (!Array.isArray(data)) {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || "Expected array, received " + typeof data }] };
+      }
+      
+      let errors = [];
+      let parsedArray = [];
+      
+      for (let i = 0; i < data.length; i++) {
+        const result = this._element._parse(data[i], [...path, i]);
+        if (result.errors.length > 0) {
+          errors.push(...result.errors);
+        } else {
+          parsedArray.push(result.value);
+        }
+      }
+      
+      for (const check of this._checks) {
+        if (check.name === 'min' && data.length < check.val) errors.push({ path, message: check.msg || `Array must contain at least ${check.val} element(s)` });
+        if (check.name === 'max' && data.length > check.val) errors.push({ path, message: check.msg || `Array must contain at most ${check.val} element(s)` });
+      }
+      
+      return { value: parsedArray, errors };
+    }
+  }
+  
+  class OwiEnum extends OwiSchema {
+    constructor(values, options) {
+      super(options);
+      this._values = values;
+    }
+    
+    _typeCheck(data, path) {
+      if (!this._values.includes(data)) {
+        return { value: data, errors: [{ path, message: this._typeErrorMessage || `Invalid enum value. Expected ${this._values.map(v => "'" + v + "'").join(' | ')}, received '${data}'` }] };
+      }
+      return { value: data, errors: [] };
+    }
+  }
+  
+  class OwiUnion extends OwiSchema {
+    constructor(schemas, options) {
+      super(options);
+      this._schemas = schemas;
+    }
+    
+    _typeCheck(data, path) {
+      let allErrors = [];
+      for (const schema of this._schemas) {
+        const result = schema._parse(data, path);
+        if (result.errors.length === 0) {
+          return result;
+        }
+        allErrors.push(result.errors);
+      }
+      return { value: data, errors: [{ path, message: this._typeErrorMessage || "Invalid input" }] };
+    }
+  }
+  
+  // Attach schema builders to `owi`
+  owi.string = (opts) => new OwiString(opts);
+  owi.number = (opts) => new OwiNumber(opts);
+  owi.boolean = (opts) => new OwiBoolean(opts);
+  owi.object = (shape, opts) => new OwiObject(shape, opts);
+  owi.array = (element, opts) => new OwiArray(element, opts);
+  owi.enum = (values, opts) => new OwiEnum(values, opts);
+  owi.union = (schemas, opts) => new OwiUnion(schemas, opts);
+
+  module.exports = {owi, validate, OwiError};
